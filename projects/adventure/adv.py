@@ -1,9 +1,21 @@
 from room import Room
 from player import Player
 from world import World
-from util import Stack, Queue
 import random
 from ast import literal_eval
+
+class Queue():
+    def __init__(self):
+        self.queue = []
+    def enqueue(self, value):
+        self.queue.append(value)
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+    def size(self):
+        return len(self.queue)
 
 # Load world
 #------------------------------------------------------------------------------#
@@ -26,14 +38,56 @@ world.print_rooms()
 player = Player(world.starting_room)
 #------------------------------------------------------------------------------#
 
-# function 1:
 
-def
-
-
-# Fill this out with directions to walk
-# traversal_path = ['n', 'n']
+# path already travelled
 traversal_path = []
+
+# reverse directions
+reverse = {'n': 's', 's': 'n', 'e': 'w', 'w': 'e'}
+
+# visited
+visited = {}
+
+# start exploring
+## keep exploring if number of rooms > num of rooms visited so far
+while len(visited) < len(room_graph):
+
+    # if current room has not been added to dict
+    if player.current_room.id not in visited:
+        ## add new room to dict and exits
+        # {
+        #  0: {'n': '?', 's': 5, 'w': '?', 'e': '?'},
+        #  5: {'n': 0, 's': '?', 'e': '?'}
+        # }
+        # make sub-dict within visited
+        visited[player.current_room.id] = {}
+        for exit in player.current_room.get_exits():
+            visited[player.current_room.id][exit] = '?'
+
+    more_exits = []
+    # start exploring the new exits
+    for unvisited in visited[player.current_room.id]:
+        if visited[player.current_room.id][unvisited] == '?':
+            # ['n', 's']
+            more_exits.append(unvisited)
+
+    # case 1: When you reach a dead-end (i.e. a room with no unexplored paths),
+    # walk back to the nearest room that does contain an unexplored path.
+    # You can find the path to the shortest unexplored room by using BFS
+    # for a room with a `'?'` for an exit.
+
+
+
+
+    # case 2:
+
+
+
+
+
+
+
+
 
 
 
