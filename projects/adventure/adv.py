@@ -22,11 +22,11 @@ class Queue():
 world = World()
 
 # You may uncomment the smaller graphs for development and testing purposes.
-map_file = "maps/test_line.txt"
+# map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -41,9 +41,9 @@ player = Player(world.starting_room)
 
 def bfs(visited_rooms):
         """
-        Return a path containing the shortest path from
-        starting_vertex to destination_vertex in
-        breath-first order.
+        BFS will return the path as a list of room IDs.
+        You will need to convert this to a list of n/s/e/w directions
+        before you can add it to your traversal path.
         """
         # modify the BFS code
 
@@ -71,7 +71,7 @@ def bfs(visited_rooms):
                 visited.add(last_room)
 
                 for exit in visited_rooms[last_room]:
-                    if visited_rooms[last_room][exit_direction] == '?':
+                    if visited_rooms[last_room][exit] == '?':
                         return current_path
                     # if it's not a ? but a direction, it has been explored
                     # so add to the queue as normal
@@ -83,7 +83,8 @@ def bfs(visited_rooms):
                         # directions before you can add it to your traversal path.
                         copy.append(visited_rooms[last_room][exit])
                         queue.enqueue(copy)
-            return path
+
+        return current_path
 
 # path already travelled
 traversal_path = []
@@ -123,20 +124,66 @@ while len(visited_rooms) < len(room_graph):
     # for a room with a `'?'` for an exit.
     if len(more_exits) == 0:
         path = bfs(visited_rooms)
-    # as you make your way back, you need to track the directions by appending
-    # to traversal_path
+        # remember:
+                #BFS will return the path as a list of room IDs.
+                #You will need to convert this to a list of n/s/e/w directions
+                #before you can add it to your traversal path.
 
+    # and as you make your way back, you need to track the directions by appending
+    # to traversal_path
+        for room_id in path:
+            for next_direction in visited_rooms[player.current_room.id]:
+                # only proceed if already in visited rooms i.e. not a new room
+                if next_direction in visited_rooms[player.current_room.id]:
+                    # only proceed if it is indeed an  unexplored room
+                    if visited_rooms[player.current_room.id][next_direction] == room_id and player.current_room.id != room_id:
+                        # REPEAT THE SAME AS CASE 2
+                        traversal_path.append(next_direction)
+                        # when entering the room from unexplored direction, connect room and previous room
+                        next_room = player.current_room.get_room_in_direction(next_direction)
+                        visited_rooms[player.current_room.id][next_direction] = next_room.id
+
+                        # repeat new room addition
+                        # if current room has not been added to dict
+                        if next_room.id not in visited_rooms:
+                            visited_rooms[next_room.id] = {}
+                            for exit in next_room.get_exits():
+                                visited_rooms[next_room.id][exit] = '?'
+
+                        # now we reverse
+                        # plug in the reverse direction to backtrack: this is our current room now
+                        visited_rooms[next_room.id][reverse[next_direction]] = player.current_room.id
+                        player.travel(next_direction)
 
 
     # case 2: pick a random exit from more_exits
+    # travels and logs that direction
+    # then loop
+    # dfs
     else:
-        next_exit = random.choice(more_exits)
-        traversal_path.append(next_exit)
+        next_direction = random.choice(more_exits)
 
+        traversal_path.append(next_direction)
+        # when entering the room from unexplored direction, connect room and previous room
+        next_room = player.current_room.get_room_in_direction(next_direction)
+        visited_rooms[player.current_room.id][next_direction] = next_room.id
 
+        # repeat new room addition
+        # if current room has not been added to dict
+        if next_room.id not in visited_rooms:
+            visited_rooms[next_room.id] = {}
+            for exit in next_room.get_exits():
+                visited_rooms[next_room.id][exit] = '?'
 
+        # now we reverse
+        # plug in the reverse direction to backtrack: this is our current room now
+        visited_rooms[next_room.id][reverse[next_direction]] = player.current_room.id
+        player.travel(next_direction)
 
+#------------------------------------------------------------------------------#
 
+# TRAVERSAL TEST
+visited_rooms = set()
 player.current_room = world.starting_room
 visited_rooms.add(player.current_room)
 
@@ -151,6 +198,8 @@ else:
     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
 
 
+
+# TESTS PASSED: 1010 moves, 500 rooms visited
 
 #######
 # UNCOMMENT TO WALK AROUND
