@@ -1,3 +1,6 @@
+
+# O(n)^2 becuase of nested for loop
+
 # bfs
 import random
 
